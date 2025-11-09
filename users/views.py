@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.tokens import default_token_generator
@@ -5,17 +6,15 @@ from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.generic import (
     CreateView,
-    ListView,
-    DetailView,
-    UpdateView,
     DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
     View,
 )
-from django.contrib import messages
-
 
 from config.settings import EMAIL_HOST_USER
 from users.forms import CustomUserCreationForm, UserUpdateForm

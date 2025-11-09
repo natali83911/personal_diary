@@ -1,6 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils.text import slugify
+
+from config import settings
 
 
 class Tag(models.Model):
@@ -24,7 +25,7 @@ class Tag(models.Model):
 
 class DiaryEntry(models.Model):
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="entries",
         verbose_name="Пользователь",

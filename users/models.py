@@ -25,13 +25,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    username = models.CharField(
-        max_length=150,
-        blank=True,
-        null=True,
-        verbose_name=_("Имя пользователя"),
-        help_text=_("Необязательное имя пользователя. Можно оставить пустым."),
-    )
+    username = None
 
     email = models.EmailField(_("email адрес"), unique=True)
 
@@ -43,11 +37,13 @@ class CustomUser(AbstractUser):
         max_length=100, verbose_name="Токен", blank=True, null=True
     )
 
-    def __str__(self):
-        return self.email
-
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
+
+    objects = CustomUserManager()
+
+    def __str__(self):
+        return self.email
 
     class Meta:
         verbose_name = "Пользователь"
