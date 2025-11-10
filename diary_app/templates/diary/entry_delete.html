@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Подтвердите удаление{% endblock %}
+
+{% block content %}
+<h1>Удалить запись</h1>
+<p>Вы уверены, что хотите удалить запись <strong>{{ object.title }}</strong>?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Да, удалить</button>
+    <a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-secondary ms-2">Отмена</a>
+</form>
+{% endblock %}

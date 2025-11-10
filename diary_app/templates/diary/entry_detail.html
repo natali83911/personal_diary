@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ entry.title }}</h1>
+<p><small>Создана: {{ entry.created_at|date:"d M Y H:i" }}</small></p>
+
+<div>{{ entry.content|linebreaks }}</div>
+
+{% if entry.tags.all %}
+<p><strong>Теги:</strong>
+  {% for tag in entry.tags.all %}
+    <span class="badge bg-secondary">{{ tag.name }}</span>
+  {% endfor %}
+</p>
+{% endif %}
+
+<p><strong>Настроение:</strong> {{ entry.mood }}</p>
+
+<a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-outline-primary">Редактировать</a>
+<a href="{% url 'diary:entry_delete' entry.pk %}" class="btn btn-outline-danger ms-2">Удалить</a>
+<a href="{% url 'diary:entry_list' %}" class="btn btn-secondary ms-2">Назад к списку</a>
+{% endblock %}

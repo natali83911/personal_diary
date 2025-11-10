@@ -1,18 +1,15 @@
+from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
-from users.views import (
-    DashboardView,
-    RegisterView,
-    UserDeleteView,
-    UserDetailView,
-    UserListView,
-    UserUpdateView,
-    email_verification,
-)
+from users.views import (DashboardView, RegisterView, UserDeleteView,
+                         UserDetailView, UserListView, UserUpdateView,
+                         email_verification)
 
 app_name = "users"
 
 urlpatterns = [
+    path("login/", LoginView.as_view(template_name="login.html"), name="login"),
+    path("logout/", LogoutView.as_view(), name="logout"),
     path("register/", RegisterView.as_view(), name="register"),
     path("email-confirm/<uidb64>/<token>/", email_verification, name="email_confirm"),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),

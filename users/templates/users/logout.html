@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Выход{% endblock %}
+
+{% block content %}
+<h1>Вы вышли из системы</h1>
+
+<p>Спасибо за посещение!</p>
+
+<a href="{% url 'users:login' %}" class="btn btn-primary">Войти снова</a>
+<a href="{% url 'diary:entry_list' %}" class="btn btn-secondary ms-2">Вернуться в дневник</a>
+{% endblock %}

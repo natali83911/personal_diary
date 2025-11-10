@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Пользователь: {{ object.email }}{% endblock %}
+
+{% block content %}
+<h1>Информация о пользователе {{ object.email }}</h1>
+
+<ul>
+  <li>Email: {{ object.email }}</li>
+  <li>Аватар:
+    {% if object.avatar %}
+      <img src="{{ object.avatar.url }}" alt="Аватар пользователя" width="100" />
+    {% else %}
+      Нет аватара
+    {% endif %}
+  </li>
+  <li>Токен: {{ object.token|default:"-" }}</li>
+</ul>
+
+<a href="{% url 'users:user_update' object.pk %}" class="btn btn-primary">Редактировать профиль</a>
+<a href="{% url 'users:user_delete' object.pk %}" class="btn btn-danger"
+     onclick="return confirm('Вы уверены, что хотите удалить этого пользователя?');">
+     Удалить
+  </a>
+<a href="{% url 'users:user_list' %}" class="btn btn-secondary ms-2">Назад к списку</a>
+{% endblock %}

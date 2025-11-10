@@ -7,14 +7,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.generic import (
-    CreateView,
-    DeleteView,
-    DetailView,
-    ListView,
-    UpdateView,
-    View,
-)
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView, View)
 
 from config.settings import EMAIL_HOST_USER
 from users.forms import CustomUserCreationForm, UserUpdateForm
@@ -105,13 +99,13 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_success_url(self):
         if self.request.user.is_superuser:
-            return reverse_lazy("users:user_list")
+            return reverse_lazy("users:user_list.html")
         return reverse_lazy("users:dashboard")
 
 
 class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = User
-    template_name = "users/user_confirm_delete.html"
+    template_name = "users/user_delete.html"
     raise_exception = True
     login_url = reverse_lazy("users:login")
 
@@ -121,5 +115,5 @@ class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def get_success_url(self):
         if self.request.user.is_superuser:
-            return reverse_lazy("users:user_list")
+            return reverse_lazy("users:user_list.html")
         return reverse_lazy("users:dashboard")

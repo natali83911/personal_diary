@@ -1,14 +1,10 @@
 from django.urls import path
 
-from .views import (
-    DiaryEntryCreateView,
-    DiaryEntryDeleteView,
-    DiaryEntryDetailView,
-    DiaryEntryListView,
-    DiaryEntryUpdateView,
-)
+from .views import (DiaryEntryCreateView, DiaryEntryDeleteView,
+                    DiaryEntryDetailView, DiaryEntryListView,
+                    DiaryEntryUpdateView)
 
-app_name = "diary"
+app_name = "diary_app"
 
 urlpatterns = [
     path("", DiaryEntryListView.as_view(), name="entry_list"),

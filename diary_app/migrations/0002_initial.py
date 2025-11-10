@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             field=models.ManyToManyField(
                 blank=True,
                 help_text="Выберите или добавьте теги для записи",
-                to="diary_app.tag",
+                to="diary.tag",
                 verbose_name="Теги",
             ),
         ),

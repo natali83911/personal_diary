@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Подтверждение удаления пользователя{% endblock %}
+
+{% block content %}
+<h1>Подтверждение удаления</h1>
+
+<p>Вы действительно хотите удалить пользователя <strong>{{ object.email }}</strong>?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Удалить</button>
+  <a href="{% url 'users:user_detail' object.pk %}" class="btn btn-secondary ms-2">Отмена</a>
+</form>
+{% endblock %}
