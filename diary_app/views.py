@@ -26,6 +26,7 @@ class DiaryEntryListView(LoginRequiredMixin, ListView):
 
 class DiaryEntryDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = DiaryEntry
+    context_object_name = "entry"
     template_name = "diary/entry_detail.html"
 
     def test_func(self):
@@ -36,7 +37,7 @@ class DiaryEntryDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 class DiaryEntryCreateView(LoginRequiredMixin, CreateView):
     model = DiaryEntry
     form_class = DiaryEntryForm
-    template_name = "diary/entry_form.html"
+    template_name = "diary/entry_create.html"
     success_url = reverse_lazy("diary:entry_list")
 
     def form_valid(self, form):
@@ -47,7 +48,7 @@ class DiaryEntryCreateView(LoginRequiredMixin, CreateView):
 class DiaryEntryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = DiaryEntry
     form_class = DiaryEntryForm
-    template_name = "diary/entry_form.html"
+    template_name = "diary/entry_create.html"
     success_url = reverse_lazy("diary:entry_list")
 
     def test_func(self):
@@ -57,7 +58,7 @@ class DiaryEntryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class DiaryEntryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = DiaryEntry
-    template_name = "diary/entry_confirm_delete.html"
+    template_name = "diary/entry_delete.html"
     success_url = reverse_lazy("diary:entry_list")
 
     def test_func(self):

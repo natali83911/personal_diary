@@ -4,16 +4,21 @@
 {% block content %}
 <h1>{{ entry.title }}</h1>
 <p><small>Создана: {{ entry.created_at|date:"d M Y H:i" }}</small></p>
+{% if entry.updated_at != entry.created_at %}
+<p><small>Редактирована: {{ entry.updated_at|date:"d M Y H:i" }}</small></p>
+{% endif %}
+
 
 <div>{{ entry.content|linebreaks }}</div>
 
-{% if entry.tags.all %}
-<p><strong>Теги:</strong>
+<div class="my-3">
+  <strong>Теги:</strong>
   {% for tag in entry.tags.all %}
     <span class="badge bg-secondary">{{ tag.name }}</span>
+  {% empty %}
+    <span>Тегов нет</span>
   {% endfor %}
-</p>
-{% endif %}
+</div>
 
 <p><strong>Настроение:</strong> {{ entry.mood }}</p>
 

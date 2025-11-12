@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes, force_str
@@ -25,6 +26,8 @@ class RegisterView(CreateView):
         user = form.save(commit=False)
         user.is_active = False
         user.save()
+        self.object = user
+        # Генерация email с подтверждением
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         host = self.request.get_host()
@@ -37,7 +40,7 @@ class RegisterView(CreateView):
             fail_silently=False,
         )
         messages.success(self.request, "Проверьте почту для подтверждения регистрации.")
-        return super().form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 def email_verification(request, uidb64, token):
@@ -49,7 +52,7 @@ def email_verification(request, uidb64, token):
 
     if user and default_token_generator.check_token(user, token):
         user.is_active = True
-        user.save()
+        user.save(update_fields=["is_active"])
         messages.success(request, "Почта подтверждена. Вы можете войти в систему.")
         return redirect("users:login")
     else:

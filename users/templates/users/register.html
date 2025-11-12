@@ -1,14 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
-{% load widget_tweaks %}
+{% load form_tags %}
 
-
-{% block title %}Вход{% endblock %}
+{% block title %}Регистрация{% endblock %}
 
 {% block content %}
-<h1>Вход на сайт</h1>
+<h1>Регистрация</h1>
 
-<form method="post" novalidate>
+<form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
 
     {% if form.non_field_errors %}
@@ -32,7 +31,7 @@
     </div>
     {% endfor %}
 
-    <button type="submit" class="btn btn-primary">Войти</button>
-    <a href="{% url 'users:register' %}" class="btn btn-link ms-2">Регистрация</a>
+    <button type="submit" class="btn btn-outline-primary">Зарегистрироваться</button>
+    <a href="{% url 'diary:entry_list' %}" class="btn btn-outline-secondary ms-2">Отмена</a>
 </form>
 {% endblock %}

@@ -14,3 +14,6 @@ class DiaryEntryForm(forms.ModelForm):
     class Meta:
         model = DiaryEntry
         fields = ["title", "content", "tags", "mood", "is_private"]
+        widgets = {
+            "tags": forms.SelectMultiple(attrs={"class": "form-select", "size": "5"}),
+        }
