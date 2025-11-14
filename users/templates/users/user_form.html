@@ -28,10 +28,14 @@
   {% endfor %}
 
   <button type="submit" class="btn btn-primary">Сохранить</button>
-  <a href="{% url 'users:user_delete' form.instance.pk %}" class="btn btn-danger"
-     onclick="return confirm('Вы уверены, что хотите удалить этого пользователя?');">
-    Удалить
-  </a>
+
+  {% if perms.auth.delete_user or form.instance == request.user %}
+    <a href="{% url 'users:user_delete' form.instance.pk %}" class="btn btn-danger"
+       onclick="return confirm('Вы уверены, что хотите удалить этого пользователя?');">
+      Удалить
+    </a>
+  {% endif %}
+
   <a href="{% url 'users:user_list' %}" class="btn btn-secondary ms-2">Отмена</a>
 </form>
 {% endblock %}

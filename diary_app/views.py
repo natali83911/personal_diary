@@ -50,6 +50,8 @@ class DiaryEntryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     form_class = DiaryEntryForm
     template_name = "diary/entry_create.html"
     success_url = reverse_lazy("diary:entry_list")
+    raise_exception = True
+    login_url = reverse_lazy("users:login")
 
     def test_func(self):
         entry = self.get_object()

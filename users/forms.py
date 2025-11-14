@@ -10,7 +10,7 @@ User = get_user_model()
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ("email", "password1", "password2")
+        fields = ("username", "email", "password1", "password2")
 
     email = forms.EmailField(label="Email", required=True)
 

@@ -73,8 +73,10 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     login_url = reverse_lazy("users:login")
 
     def test_func(self):
-        # Доступ только для суперпользователей
-        return self.request.user.is_superuser
+        return (
+            self.request.user.is_superuser
+            or self.request.user.groups.filter(name="moderators").exists()
+        )
 
 
 class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
@@ -85,8 +87,11 @@ class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
     def test_func(self):
         obj = self.get_object()
-        # Можно смотреть свой профиль или суперпользователь
-        return self.request.user.is_superuser or obj == self.request.user
+        # Суперпользователь всегда имеет доступ
+        if self.request.user.is_superuser:
+            return True
+        # Пользователь может видеть/редактировать/удалять только себя
+        return obj == self.request.user
 
 
 class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -98,7 +103,11 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         obj = self.get_object()
-        return self.request.user.is_superuser or obj == self.request.user
+        # Суперпользователь всегда имеет доступ
+        if self.request.user.is_superuser:
+            return True
+        # Пользователь может видеть/редактировать/удалять только себя
+        return obj == self.request.user
 
     def get_success_url(self):
         if self.request.user.is_superuser:
@@ -114,7 +123,11 @@ class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         obj = self.get_object()
-        return self.request.user.is_superuser or obj == self.request.user
+        # Суперпользователь всегда имеет доступ
+        if self.request.user.is_superuser:
+            return True
+        # Пользователь может видеть/редактировать/удалять только себя
+        return obj == self.request.user
 
     def get_success_url(self):
         if self.request.user.is_superuser:

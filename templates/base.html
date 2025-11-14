@@ -1,4 +1,5 @@
 {% load static %}
+{% load user_extras %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -14,29 +15,29 @@
         <ul class="navbar-nav ms-auto">
             {% if user.is_authenticated %}
             <li class="nav-item"><a class="nav-link" href="{% url 'users:dashboard' %}">Профиль</a></li>
+
+            {% if user.is_superuser or user|has_group:"moderators" %}
             <li class="nav-item"><a class="nav-link" href="{% url 'users:user_list' %}">Пользователи</a></li>
-          <li class="nav-item">
-            <form method="post" action="{% url 'users:logout' %}" style="display: inline;">
-              {% csrf_token %}
-              <button type="submit"
-                      class="nav-link"
-                      style="all: unset; cursor: pointer; display: inline; height: 100%; line-height: inherit;">
-                Выйти
-              </button>
-            </form>
-          </li>
+            {% endif %}
 
-
+            <li class="nav-item">
+                <form method="post" action="{% url 'users:logout' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="nav-link"
+                            style="all: unset; cursor: pointer; display: inline; height: 100%; line-height: inherit;">
+                        Выйти
+                    </button>
+                </form>
+            </li>
             {% else %}
             <li class="nav-item"><a class="nav-link" href="{% url 'users:login' %}">Вход</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'users:register' %}">Регистрация</a></li>
             <li class="nav-item"><a href="{% url 'users:password_reset' %}" class="nav-link">Забыли пароль?</a></li>
             {% endif %}
         </ul>
-
     </div>
 </nav>
-
 <main class="container">
     {% if messages %}
     {% for message in messages %}

@@ -9,6 +9,7 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError("Email обязателен")
         email = self.normalize_email(email)
+        extra_fields.setdefault("username", email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
@@ -25,7 +26,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    username = None
+    username = models.CharField(max_length=150, unique=True, blank=True, null=True)
 
     email = models.EmailField(_("email адрес"), unique=True)
 
@@ -48,3 +49,6 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        permissions = [
+            ("view_user", "Can view user"),
+        ]

@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load user_extras %}
+
 
 {% block title %}Подтверждение удаления пользователя{% endblock %}
 
@@ -7,9 +9,14 @@
 
 <p>Вы действительно хотите удалить пользователя <strong>{{ object.email }}</strong>?</p>
 
+{% if user|has_group:"moderators" or user == object %}
 <form method="post">
   {% csrf_token %}
   <button type="submit" class="btn btn-danger">Удалить</button>
   <a href="{% url 'users:user_detail' object.pk %}" class="btn btn-secondary ms-2">Отмена</a>
 </form>
+{% else %}
+<p>У вас нет прав удалять этого пользователя.</p>
+<a href="{% url 'users:user_list' %}">Вернуться к списку пользователей</a>
+{% endif %}
 {% endblock %}
