@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load user_extras %}
 
 {% block title %}Список пользователей{% endblock %}
 
@@ -27,10 +28,14 @@
       <td>
         <a href="{% url 'users:user_detail' user.pk %}">Просмотр</a> |
         {% if perms.auth.change_user or user == request.user %}
-          <a href="{% url 'users:user_update' user.pk %}">Редактировать</a> |
+        {% if not user|has_group:"moderators" or user == request.user %}
+        <a href="{% url 'users:user_update' user.pk %}">Редактировать</a> |
+        {% endif %}
         {% endif %}
         {% if perms.auth.delete_user or user == request.user %}
-          <a href="{% url 'users:user_delete' user.pk %}">Удалить</a>
+        {% if not user|has_group:"moderators" or user == request.user %}
+        <a href="{% url 'users:user_delete' user.pk %}">Удалить</a>
+        {% endif %}
         {% endif %}
       </td>
     </tr>

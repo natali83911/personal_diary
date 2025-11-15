@@ -1,11 +1,14 @@
+from datetime import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
 
 from .forms import DiaryEntryForm
-from .models import DiaryEntry
+from .models import DiaryEntry, EventCalendar
 
 
 class DiaryEntryListView(LoginRequiredMixin, ListView):
@@ -66,3 +69,40 @@ class DiaryEntryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         entry = self.get_object()
         return entry.user == self.request.user
+
+
+def calendar_view(request, year=None, month=None):
+    year = int(year) if year else datetime.now().year
+    month = int(month) if month else datetime.now().month
+
+    events = DiaryEntry.objects.filter(created_at__year=year, created_at__month=month)
+
+    cal = EventCalendar(events)
+    html_cal = cal.formatmonth(year, month)
+
+    # Рассчитать предыдущий месяц
+    if month == 1:
+        prev_month = 12
+        prev_year = year - 1
+    else:
+        prev_month = month - 1
+        prev_year = year
+
+    # Рассчитать следующий месяц
+    if month == 12:
+        next_month = 1
+        next_year = year + 1
+    else:
+        next_month = month + 1
+        next_year = year
+
+    context = {
+        "calendar": html_cal,
+        "year": year,
+        "month": month,
+        "prev_month": prev_month,
+        "prev_year": prev_year,
+        "next_month": next_month,
+        "next_year": next_year,
+    }
+    return render(request, "diary/calendar.html", context)

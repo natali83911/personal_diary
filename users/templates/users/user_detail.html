@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load user_extras %}
 
 {% block title %}Пользователь: {{ object.email }}{% endblock %}
 
@@ -18,15 +19,17 @@
 </ul>
 
 {% if perms.auth.change_user or object == request.user %}
-  <a href="{% url 'users:user_update' object.pk %}" class="btn btn-primary">Редактировать профиль</a>
+  <a href="{% url 'users:user_update' object.pk %}" class="btn btn-outline-primary">Редактировать профиль</a>
 {% endif %}
 
 {% if perms.auth.delete_user or object == request.user %}
-  <a href="{% url 'users:user_delete' object.pk %}" class="btn btn-danger"
+  <a href="{% url 'users:user_delete' object.pk %}" class="btn btn-outline-danger ms-2"
      onclick="return confirm('Вы уверены, что хотите удалить этого пользователя?');">
      Удалить
   </a>
+  <a href="{% url 'users:dashboard'%}" class="btn btn-outline-secondary ms-2">Отмена</a>
 {% endif %}
-
-<a href="{% url 'users:user_list' %}" class="btn btn-secondary ms-2">Назад к списку</a>
+{% if user|has_group:"moderators" or request.user.is_superuser %}
+<a href="{% url 'users:user_list' %}" class="btn btn-outline-secondary ms-2">Назад к списку</a>
+{% endif %}
 {% endblock %}

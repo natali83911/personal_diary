@@ -1,3 +1,6 @@
+import calendar
+from datetime import datetime
+
 from django.db import models
 from django.utils.text import slugify
 
@@ -95,3 +98,36 @@ class DiaryEntry(models.Model):
         verbose_name = "Запись дневника"
         verbose_name_plural = "Записи дневника"
         ordering = ["-created_at"]
+
+
+class EventCalendar(calendar.HTMLCalendar):
+    def __init__(self, events):
+        super().__init__()
+        self.events = self.group_by_day(events)
+
+    def group_by_day(self, events):
+        # Группируем события (DiaryEntry) по дню месяца
+        events_per_day = {}
+        for event in events:
+            day = event.created_at.day  # Здесь берем созданную дату
+            events_per_day.setdefault(day, []).append(event)
+        return events_per_day
+
+    def formatday(self, day, weekday):
+        if day == 0:
+            return '<td class="noday">&nbsp;</td>'  # пустые дни в календаре
+        cssclass = self.cssclasses[weekday]
+        today = datetime.today().day
+
+        if day == today:
+            cssclass += " today"  # подсветка текущего дня
+
+        if day in self.events:
+            cssclass += " eventday"  # подсветка дней с событиями
+            body = f'<span class="day">{day}</span><ul>'
+            for event in self.events[day]:
+                # Отображаем заголовок записи дневника (event.title)
+                body += f"<li>{event.title}</li>"
+            body += "</ul>"
+            return f'<td class="{cssclass}">{body}</td>'
+        return f'<td class="{cssclass}"><span class="day">{day}</span></td>'

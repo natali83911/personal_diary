@@ -78,6 +78,11 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             or self.request.user.groups.filter(name="moderators").exists()
         )
 
+    def get_success_url(self):
+        if self.request.user.is_superuser and self.request.user != self.object:
+            return reverse_lazy("users:user_list")
+        return reverse_lazy("users:dashboard")
+
 
 class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = User
@@ -87,11 +92,17 @@ class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
     def test_func(self):
         obj = self.get_object()
-        # Суперпользователь всегда имеет доступ
-        if self.request.user.is_superuser:
+        user = self.request.user
+
+        if user.is_superuser:
             return True
-        # Пользователь может видеть/редактировать/удалять только себя
-        return obj == self.request.user
+
+        # Разрешаем модераторам просматривать всех
+        if user.groups.filter(name="moderators").exists():
+            return True
+
+        # Остальные могут видеть только себя
+        return obj == user
 
 
 class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -110,8 +121,11 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return obj == self.request.user
 
     def get_success_url(self):
-        if self.request.user.is_superuser:
-            return reverse_lazy("users:user_list.html")
+        # Если суперпользователь редактирует другого - отправляем в список пользователей
+        if self.request.user.is_superuser and self.request.user != self.object:
+            return reverse_lazy("users:user_list")
+
+        # Если редактирует сам себя или обычный пользователь - на дашборд или профиль
         return reverse_lazy("users:dashboard")
 
 

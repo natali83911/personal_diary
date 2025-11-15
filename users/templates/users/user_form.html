@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load form_tags %}
+{% load user_extras %}
 
 {% block title %}
   {% if form.instance.pk %}Редактировать пользователя{% else %}Новый пользователь{% endif %}
@@ -27,15 +28,19 @@
     </div>
   {% endfor %}
 
-  <button type="submit" class="btn btn-primary">Сохранить</button>
+  <button type="submit" class="btn btn-outline-primary">Сохранить</button>
 
   {% if perms.auth.delete_user or form.instance == request.user %}
-    <a href="{% url 'users:user_delete' form.instance.pk %}" class="btn btn-danger"
+    <a href="{% url 'users:user_delete' form.instance.pk %}" class="btn btn-outline-danger ms-2"
        onclick="return confirm('Вы уверены, что хотите удалить этого пользователя?');">
       Удалить
     </a>
   {% endif %}
 
-  <a href="{% url 'users:user_list' %}" class="btn btn-secondary ms-2">Отмена</a>
+  {% if user|has_group:"moderators" or request.user.is_superuser %}
+    <a href="{% url 'users:user_list' %}" class="btn btn-outline-secondary ms-2">Отмена</a>
+  {% else %}
+    <a href="{% url 'users:dashboard' %}" class="btn btn-outline-secondary ms-2">Отмена</a>
+  {% endif %}
 </form>
 {% endblock %}

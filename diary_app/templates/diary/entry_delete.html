@@ -8,11 +8,11 @@
 {% if request.user == object.user or request.user.is_superuser %}
 <form method="post">
     {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Да, удалить</button>
-    <a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-secondary ms-2">Отмена</a>
+    <button type="submit" class="btn btn-outline-danger">Да, удалить</button>
+    <a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-outline-secondary ms-2">Отмена</a>
 </form>
 {% else %}
 <p class="text-danger">У вас нет прав для удаления этой записи.</p>
-<a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-secondary ms-2">Назад</a>
+<a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-outline-secondary ms-2">Назад</a>
 {% endif %}
 {% endblock %}

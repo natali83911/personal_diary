@@ -43,3 +43,12 @@ class UserUpdateForm(forms.ModelForm):
         if qs.exists():
             raise forms.ValidationError("Пользователь с таким email уже существует.")
         return email
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get("avatar")
+        if avatar:
+            if avatar.size > 2 * 1024 * 1024:
+                raise forms.ValidationError("Максимальный размер аватара 2 Мб")
+            if not avatar.content_type.startswith("image/"):
+                raise forms.ValidationError("Загрузите изображение")
+        return avatar
