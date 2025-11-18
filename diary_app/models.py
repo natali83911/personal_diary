@@ -131,3 +131,21 @@ class EventCalendar(calendar.HTMLCalendar):
             body += "</ul>"
             return f'<td class="{cssclass}">{body}</td>'
         return f'<td class="{cssclass}"><span class="day">{day}</span></td>'
+
+
+class Attachment(models.Model):
+    diary_entry = models.ForeignKey(
+        DiaryEntry,
+        related_name="attachments",
+        on_delete=models.CASCADE,
+        verbose_name="Запись дневника",
+    )
+    file = models.FileField(
+        upload_to="attachments/",
+        verbose_name="Файл",
+        help_text="Загрузите файл (макс. 5MB, jpg/png/pdf)",
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата загрузки")
+
+    def __str__(self):
+        return self.file.name

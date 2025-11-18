@@ -21,6 +21,21 @@
 
 <p><strong>Настроение:</strong> {{ entry.mood }}</p>
 
+<h5>Прикрепленные файлы:</h5>
+{% if entry.attachments.all %}
+<ul>
+  {% for attachment in entry.attachments.all %}
+    <li>
+      <a href="{{ attachment.file.url }}" target="_blank">
+        {{ attachment.file.name|cut:"attachments/" }} <!-- Можно показать часть имени -->
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>Файлы не прикреплены.</p>
+{% endif %}
+
 {% if request.user == entry.user or request.user.is_superuser %}
   <a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-outline-primary">Редактировать</a>
   <a href="{% url 'diary:entry_delete' entry.pk %}" class="btn btn-outline-danger ms-2"

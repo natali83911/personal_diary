@@ -1,0 +1,11 @@
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  {{ form.as_p }}
+
+  <label for="{{ files_form.files.id_for_label }}">{{ files_form.files.label }}</label>
+  {{ files_form.files }}
+  <small>{{ files_form.files.help_text }}</small>
+
+  <button type="submit" class="btn btn-primary mt-3">Сохранить</button>
+</form>

@@ -2,13 +2,13 @@ from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
 
-from .forms import DiaryEntryForm
-from .models import DiaryEntry, EventCalendar
+from .forms import AttachmentForm, DiaryEntryForm
+from .models import Attachment, DiaryEntry, EventCalendar
 
 
 class DiaryEntryListView(LoginRequiredMixin, ListView):
@@ -43,15 +43,51 @@ class DiaryEntryCreateView(LoginRequiredMixin, CreateView):
     template_name = "diary/entry_create.html"
     success_url = reverse_lazy("diary:entry_list")
 
-    def form_valid(self, form):
+    def get(self, request, *args, **kwargs):
+        self.object = None
+        form = self.form_class()
+        files_form = AttachmentForm()
+        return self.render_to_response(
+            self.get_context_data(form=form, files_form=files_form)
+        )
+
+    def post(self, request, *args, **kwargs):
+        print(f"FILES keys: {request.FILES.keys()}")
+        print(f"FILES getlist('files'): {request.FILES.getlist('files')}")
+        form = self.form_class(request.POST)
+        files_form = AttachmentForm(request.POST, request.FILES)
+        print(
+            f"Form valid: {form.is_valid()}, files_form valid: {files_form.is_valid()}"
+        )
+        if form.is_valid() and files_form.is_valid():
+            return self.handle_valid_forms(form, files_form)
+        else:
+            return self.form_invalid(form, files_form)
+
+    def handle_valid_forms(self, form, files_form):
         form.instance.user = self.request.user
-        return super().form_valid(form)
+        self.object = form.save()
+        files = files_form.cleaned_data.get("files", [])
+        for f in files:
+            Attachment.objects.create(diary_entry=self.object, file=f)
+        return redirect(self.success_url)
+
+    def form_invalid(self, form, files_form):
+        self.object = None
+        return self.render_to_response(
+            self.get_context_data(form=form, files_form=files_form)
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault("files_form", AttachmentForm())
+        return context
 
 
 class DiaryEntryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = DiaryEntry
     form_class = DiaryEntryForm
-    template_name = "diary/entry_create.html"
+    template_name = "diary/entry_update.html"
     success_url = reverse_lazy("diary:entry_list")
     raise_exception = True
     login_url = reverse_lazy("users:login")
@@ -59,6 +95,50 @@ class DiaryEntryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         entry = self.get_object()
         return entry.user == self.request.user
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.form_class(instance=self.object)
+        files_form = AttachmentForm()
+        return self.render_to_response(
+            self.get_context_data(form=form, files_form=files_form)
+        )
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.form_class(request.POST, instance=self.object)
+        files_form = AttachmentForm(request.POST, request.FILES)
+        if form.is_valid() and files_form.is_valid():
+            return self.handle_valid_forms(form, files_form)
+        else:
+            return self.form_invalid(form, files_form)
+
+    def handle_valid_forms(self, form, files_form):
+        # Удаление отмеченных вложений
+        delete_ids = self.request.POST.getlist("delete_files")
+        if delete_ids:
+            Attachment.objects.filter(
+                pk__in=delete_ids, diary_entry=self.object
+            ).delete()
+
+        self.object = form.save()
+
+        # Добавление новых файлов
+        files = files_form.cleaned_data.get("files", [])
+        for f in files:
+            Attachment.objects.create(diary_entry=self.object, file=f)
+
+        return redirect(self.success_url)
+
+    def form_invalid(self, form, files_form):
+        return self.render_to_response(
+            self.get_context_data(form=form, files_form=files_form)
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault("files_form", AttachmentForm())
+        return context
 
 
 class DiaryEntryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
