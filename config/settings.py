@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "widget_tweaks",
+    "django_bootstrap_icons",
     "diary_app",
     "users",
 ]
@@ -98,7 +99,7 @@ USE_TZ = True
 
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "staticfiles"]
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -120,3 +121,5 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+BS_ICONS_BASE_URL = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/"

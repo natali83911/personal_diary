@@ -1,13 +1,18 @@
 {% extends "base.html" %}
+{% load bootstrap_icons %}
 
 {% block title %}Календарь{% endblock %}
 
 {% block content %}
-<h1>Календарь {{ month }}/{{ year }}</h1>
+<h1>{% bs_icon 'calendar-event' %} Календарь {{ month }}/{{ year }}</h1>
 
 <div class="mb-3">
-  <a href="{% url 'diary:calendar_filtered' prev_year prev_month %}" class="btn btn-outline-success">&laquo; Предыдущий</a>
-  <a href="{% url 'diary:calendar_filtered' next_year next_month %}" class="btn btn-outline-success ms-2">Следующий &raquo;</a>
+  <a href="{% url 'diary:calendar_filtered' prev_year prev_month %}" class="btn btn-outline-success">
+    {% bs_icon 'arrow-left-circle' %} &laquo; Предыдущий
+  </a>
+  <a href="{% url 'diary:calendar_filtered' next_year next_month %}" class="btn btn-outline-success ms-2">
+    Следующий &raquo; {% bs_icon 'arrow-right-circle' %}
+  </a>
 </div>
 
 <div>

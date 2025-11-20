@@ -8,6 +8,13 @@ from config import settings
 
 
 class Tag(models.Model):
+    """
+    Модель для тегов записей дневника.
+
+    Поля:
+    - name: уникальное название тега, используется для категоризации записей.
+    """
+
     name = models.CharField(
         max_length=50,
         unique=True,
@@ -16,6 +23,7 @@ class Tag(models.Model):
     )
 
     def __str__(self):
+        """Возвращает название тега для удобного отображения."""
         return self.name
 
     class Meta:
@@ -27,6 +35,21 @@ class Tag(models.Model):
 
 
 class DiaryEntry(models.Model):
+    """
+    Модель записи личного дневника.
+
+    Поля:
+    - user: владелец записи (пользователь).
+    - title: заголовок записи.
+    - content: текстовое содержимое записи.
+    - created_at: дата и время создания.
+    - updated_at: дата и время последнего обновления.
+    - tags: теги, относящиеся к записи.
+    - mood: настроение автора записи (опционально).
+    - is_private: флаг приватности записи.
+    - slug: уникальный URL-идентификатор записи.
+    """
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -81,6 +104,8 @@ class DiaryEntry(models.Model):
     )
 
     def save(self, *args, **kwargs):
+        """Переопределенный метод сохранения для генерации уникального slug
+        на основе заголовка записи."""
         if not self.slug:
             base_slug = slugify(self.title)
             slug = base_slug
@@ -92,6 +117,7 @@ class DiaryEntry(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
+        """Возвращает заголовок записи для удобного отображения."""
         return self.title
 
     class Meta:
@@ -101,11 +127,26 @@ class DiaryEntry(models.Model):
 
 
 class EventCalendar(calendar.HTMLCalendar):
+    """
+    Класс для генерации HTML-календаря с событиями (записями дневника),
+    сгруппированными по дням месяца.
+
+    Аргументы:
+    - events: QuerySet или список записей DiaryEntry для отображения.
+    """
+
     def __init__(self, events):
         super().__init__()
         self.events = self.group_by_day(events)
 
     def group_by_day(self, events):
+        """
+        Группирует переданные события по дням месяца.
+
+        Возвращает словарь, где ключ — день месяца, значение — список событий.
+        :param events:
+        :return:
+        """
         # Группируем события (DiaryEntry) по дню месяца
         events_per_day = {}
         for event in events:
@@ -114,6 +155,11 @@ class EventCalendar(calendar.HTMLCalendar):
         return events_per_day
 
     def formatday(self, day, weekday):
+        """
+        Форматирует HTML ячейку календаря для конкретного дня.
+
+        Добавляет CSS-классы и выводит события, если они есть.
+        """
         if day == 0:
             return '<td class="noday">&nbsp;</td>'  # пустые дни в календаре
         cssclass = self.cssclasses[weekday]
@@ -134,6 +180,15 @@ class EventCalendar(calendar.HTMLCalendar):
 
 
 class Attachment(models.Model):
+    """
+    Модель для хранения прикрепленных файлов к записям дневника.
+
+    Поля:
+    - diary_entry: связь с записью дневника.
+    - file: загруженный файл.
+    - uploaded_at: дата загрузки файла.
+    """
+
     diary_entry = models.ForeignKey(
         DiaryEntry,
         related_name="attachments",
@@ -148,4 +203,5 @@ class Attachment(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата загрузки")
 
     def __str__(self):
+        """Возвращает имя файла для удобного отображения."""
         return self.file.name

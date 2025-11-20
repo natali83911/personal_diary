@@ -1,18 +1,32 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
+{% load bootstrap_icons %}
+
 {% block title %}Подтвердите удаление{% endblock %}
 
 {% block content %}
-<h1>Удалить запись</h1>
+<h1>
+  {% bs_icon 'trash-fill' %} Удалить запись
+</h1>
 <p>Вы уверены, что хотите удалить запись <strong>{{ object.title }}</strong>?</p>
 
 {% if request.user == object.user or request.user.is_superuser %}
 <form method="post">
     {% csrf_token %}
-    <button type="submit" class="btn btn-outline-danger">Да, удалить</button>
-    <a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-outline-secondary ms-2">Отмена</a>
+    <button type="submit" class="btn btn-outline-danger">
+      {% bs_icon 'check-lg' %} Да, удалить
+    </button>
+    <a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-outline-secondary ms-2">
+      {% bs_icon 'x-lg' %} Отмена
+    </a>
 </form>
 {% else %}
-<p class="text-danger">У вас нет прав для удаления этой записи.</p>
-<a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-outline-secondary ms-2">Назад</a>
+<p class="text-danger">
+  {% bs_icon 'shield-shaded' %} У вас нет прав для удаления этой записи.
+</p>
+<a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-outline-secondary ms-2">
+  {% bs_icon 'arrow-left' %} Назад
+</a>
 {% endif %}
 {% endblock %}
+

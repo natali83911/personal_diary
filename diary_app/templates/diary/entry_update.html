@@ -1,12 +1,13 @@
 {% extends "base.html" %}
-{% load form_tags %}
+{% load widget_tweaks %}
+{% load bootstrap_icons %}
 
 {% block title %}
-  Редактировать запись
+  {% bs_icon 'pencil-square' %} Редактировать запись
 {% endblock %}
 
 {% block content %}
-<h1>Редактировать запись</h1>
+<h1>{% bs_icon 'pencil-square' %} Редактировать запись</h1>
 
 <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
@@ -14,7 +15,9 @@
 
     <!-- Основные поля записи -->
     <div class="mb-3">
-        <label for="{{ form.title.id_for_label }}" class="form-label">Заголовок</label>
+        <label for="{{ form.title.id_for_label }}" class="form-label">
+          {% bs_icon 'tag' %} Заголовок
+        </label>
         {{ form.title|add_class:"form-control" }}
         {% for error in form.title.errors %}
             <div class="text-danger">{{ error }}</div>
@@ -22,7 +25,9 @@
     </div>
 
     <div class="mb-3">
-        <label for="{{ form.content.id_for_label }}" class="form-label">Содержание записи</label>
+        <label for="{{ form.content.id_for_label }}" class="form-label">
+          {% bs_icon 'card-text' %} Содержание записи
+        </label>
         {{ form.content|add_class:"form-control" }}
         {% for error in form.content.errors %}
             <div class="text-danger">{{ error }}</div>
@@ -30,7 +35,9 @@
     </div>
 
     <div class="mb-3">
-        <label for="{{ form.mood.id_for_label }}" class="form-label">Настроение</label>
+        <label for="{{ form.mood.id_for_label }}" class="form-label">
+          {% bs_icon 'emoji-smile' %} Настроение
+        </label>
         {{ form.mood|add_class:"form-control" }}
         {% for error in form.mood.errors %}
             <div class="text-danger">{{ error }}</div>
@@ -38,8 +45,10 @@
     </div>
 
     <div class="mb-3">
-        <label for="{{ form.tags.id_for_label }}" class="form-label">Теги</label>
-        {{ form.tags }}
+        <label for="{{ form.tags.id_for_label }}" class="form-label">
+          {% bs_icon 'tags' %} Теги
+        </label>
+        {{ form.tags|add_class:"form-control" }}
         {% for error in form.tags.errors %}
             <div class="text-danger">{{ error }}</div>
         {% endfor %}
@@ -47,14 +56,16 @@
 
     <div class="form-check mb-3">
         {{ form.is_private|add_class:"form-check-input" }}
-        <label class="form-check-label" for="{{ form.is_private.id_for_label }}">Приватная запись</label>
+        <label class="form-check-label" for="{{ form.is_private.id_for_label }}">
+          {% bs_icon 'lock-fill' %} Приватная запись
+        </label>
         {% for error in form.is_private.errors %}
             <div class="text-danger">{{ error }}</div>
         {% endfor %}
     </div>
 
     <!-- Отображение уже загруженных файлов -->
-    <h3>Прикрепленные файлы:</h3>
+    <h3>{% bs_icon 'file-earmark-arrow-up' %} Прикрепленные файлы:</h3>
     {% if object.attachments.all %}
     <ul>
         {% for attachment in object.attachments.all %}
@@ -64,7 +75,7 @@
                 </a>
                 <label>
                     <input type="checkbox" name="delete_files" value="{{ attachment.pk }}">
-                    Удалить
+                    {% bs_icon 'trash' %} Удалить
                 </label>
             </li>
         {% endfor %}
@@ -75,14 +86,20 @@
 
     <!-- Загрузка новых файлов -->
     <div class="mb-3">
-        <label for="{{ files_form.files.id_for_label }}" class="form-label">{{ files_form.files.label }}</label>
-        {{ files_form.files }}
+        <label for="{{ files_form.files.id_for_label }}" class="form-label">
+          {% bs_icon 'file-plus' %} {{ files_form.files.label }}
+        </label>
+        {{ files_form.files|add_class:"form-control" }}
         {% for error in files_form.files.errors %}
             <div class="text-danger">{{ error }}</div>
         {% endfor %}
     </div>
 
-    <button type="submit" class="btn btn-outline-primary">Сохранить</button>
-    <a href="{% url 'diary:entry_list' %}" class="btn btn-outline-secondary ms-2">Отмена</a>
+    <button type="submit" class="btn btn-outline-primary">
+      {% bs_icon 'check-lg' %} Сохранить
+    </button>
+    <a href="{% url 'diary:entry_list' %}" class="btn btn-outline-secondary ms-2">
+      {% bs_icon 'x-lg' %} Отмена
+    </a>
 </form>
 {% endblock %}

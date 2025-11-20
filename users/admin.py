@@ -6,6 +6,14 @@ from .models import CustomUser
 
 
 class CustomUserAdmin(UserAdmin):
+    """
+    Кастомный административный интерфейс для модели CustomUser.
+
+    Использует кастомные формы для создания и изменения пользователей.
+    Отображает и фильтрует основные поля пользователя, а также организует
+    поля в логические секции (личная информация, права доступа, важные даты).
+    """
+
     add_form = CustomUserCreationForm
     form = UserUpdateForm
     model = CustomUser

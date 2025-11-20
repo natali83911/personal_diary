@@ -1,0 +1,196 @@
+body {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  z-index: 0;
+}
+
+/* Фоновое изображение с полупрозрачным светлым наложением */
+/* body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("/static/img/background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: -1;
+}
+*/
+
+.header-nav-wrapper {
+  width: 100%;
+  background-color: #198754 !important; /* Принудительно зелёный фон */
+  color: white;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;      /* Центрирование содержимого по горизонтали */
+  text-align: center;
+  padding: 1rem 0;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;               /* Поверх фонового изображения */
+}
+
+.header-nav-title {
+  font-weight: 700;
+  font-size: 2rem;
+  display: flex;
+  gap: 0.45em;
+  align-items: center;
+  justify-content: center;   /* Центрирование текста по горизонтали */
+  letter-spacing: 0.04em;
+  margin: 0;
+  width: 100%;               /* Растягивает блок для центрирования */
+}
+
+.header-nav-subtitle {
+  font-size: 1.01em;
+  opacity: 0.92;
+  color: #eaf7e7;
+  font-style: italic;
+  margin-top: 0.2rem;
+  margin-bottom: 0.5rem;
+}
+
+nav.navbar {
+  width: 100%;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-top: 0.1rem;
+  padding-bottom: 0.4rem;
+  display: flex;
+  justify-content: center;  /* Центрирует меню */
+  z-index: 1;
+}
+
+.header-nav-wrapper .navbar-brand,
+.header-nav-wrapper .nav-link {
+  color: #fff !important;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.header-nav-wrapper .navbar-brand:hover,
+.header-nav-wrapper .nav-link:hover {
+  color: #b3e6b0 !important;
+}
+
+main.container {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 1.2rem;
+  background: transparent !important;
+  border-radius: 9px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+
+/* Стиль формы поиска и списка для одинаковой ширины */
+form.mb-2, .list-group {
+  max-width: none;
+  width: 100%;
+  margin: 0 0 1rem 0;
+  box-sizing: border-box;
+}
+
+.form-control, form input[type="text"], form input[type="search"] {
+  width: 100%;
+  max-width: none;
+  min-width: unset;
+  margin-bottom: 0.6em;
+  box-sizing: border-box;
+}
+
+/* Остальная стилизация элементов списка и кнопок без изменений */
+.list-group-item {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  margin-bottom: 7px;
+  box-shadow: 0 1px 7px rgba(60, 60, 60, 0.08);
+  transition: box-shadow .2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6em 1em;
+}
+
+.list-group-item:hover {
+  box-shadow: 0 3px 10px 2px #2aa6002c;
+}
+
+.record-title {
+  font-weight: 500;
+  font-size: 1.08em;
+  color: #195c26;
+}
+
+.record-date {
+  color: #6c757d;
+  font-size: 0.97em;
+  margin-left: 0.7em;
+}
+
+.action-btn {
+  margin-left: 0.2em;
+  padding: 0.34em 0.9em;
+  border-radius: 14px;
+  font-size: 0.93em;
+  background: #eef9f0;
+  border: 1px solid #27ae60;
+  color: #177943;
+  transition: background 0.2s, box-shadow 0.2s;
+  display: inline-block;
+}
+
+.action-btn:hover {
+  background: #27ae60;
+  color: #fff;
+  box-shadow: 0 1px 6px #27ae6025;
+}
+
+.action-btn.delete {
+  background: #ffeaea;
+  border: 1px solid #e25947;
+  color: #ac1616;
+}
+
+.action-btn.delete:hover {
+  background: #e25947;
+  color: #fff;
+  box-shadow: 0 1px 6px #e2594725;
+}
+
+.btn-link {
+  color: #177943;
+  text-decoration: underline dotted;
+}
+
+h1, h2 {
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #156837;
+  margin-bottom: 0.6em;
+  word-break: break-word;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  main.container,
+  .list-group,
+  form.mb-2 {
+    max-width: 96vw;
+    padding-left: 0.3em;
+    padding-right: 0.3em;
+  }
+
+  .form-control {
+    max-width: 96vw;
+  }
+}

@@ -5,7 +5,16 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CustomUserManager(BaseUserManager):
+    """
+    Менеджер для кастомной модели пользователя CustomUser.
+    Обеспечивает создание обычных пользователей и суперпользователей с использованием email как идентификатора.
+    """
+
     def create_user(self, email, password=None, **extra_fields):
+        """
+        Создает и сохраняет пользователя с указанным email и паролем.
+        Если email не указан, выбрасывает исключение.
+        """
         if not email:
             raise ValueError("Email обязателен")
         email = self.normalize_email(email)
@@ -16,6 +25,10 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password, **extra_fields):
+        """
+        Создает и сохраняет суперпользователя с административными правами.
+        Устанавливает флаги is_staff и is_superuser в True, иначе возвращает ошибку.
+        """
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         if extra_fields.get("is_staff") is not True:
@@ -26,6 +39,16 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
+    """
+    Кастомная модель пользователя с использованием email в качестве уникального идентификатора вместо username.
+
+    Поля:
+    - username: необязательное, может быть пустым.
+    - email: обязательный, уникальный email.
+    - avatar: изображение профиля пользователя (опционально).
+    - token: произвольный токен для различных нужд (опционально).
+    """
+
     username = models.CharField(max_length=150, unique=True, blank=True, null=True)
 
     email = models.EmailField(_("email адрес"), unique=True)
@@ -44,6 +67,7 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
 
     def __str__(self):
+        """Возвращает email пользователя для удобства отображения."""
         return self.email
 
     class Meta:

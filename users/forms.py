@@ -8,6 +8,8 @@ User = get_user_model()
 
 
 class CustomUserCreationForm(UserCreationForm):
+    """Форма создания пользователя с обязательным полем email."""
+
     class Meta:
         model = CustomUser
         fields = ("username", "email", "password1", "password2")
@@ -16,6 +18,14 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class UserUpdateForm(forms.ModelForm):
+    """
+    Форма обновления данных пользователя: username, email, avatar.
+
+    Валидация:
+    - Проверка уникальности email.
+    - Проверка типа и размера загружаемого аватара (макс 2 Мб, только изображения).
+    """
+
     username = forms.CharField(
         max_length=150,
         required=False,
@@ -38,6 +48,7 @@ class UserUpdateForm(forms.ModelForm):
         fields = ["username", "email", "avatar"]
 
     def clean_email(self):
+        """Проверяет, что email уникален среди всех пользователей, кроме текущего."""
         email = self.cleaned_data.get("email")
         qs = User.objects.filter(email=email).exclude(pk=self.instance.pk)
         if qs.exists():
@@ -45,6 +56,7 @@ class UserUpdateForm(forms.ModelForm):
         return email
 
     def clean_avatar(self):
+        """Проверяет размер и тип загружаемого файла аватара."""
         avatar = self.cleaned_data.get("avatar")
         if avatar:
             if avatar.size > 2 * 1024 * 1024:

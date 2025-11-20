@@ -18,11 +18,21 @@ User = get_user_model()
 
 
 class RegisterView(CreateView):
+    """
+    Представление для регистрации нового пользователя.
+
+    Создает неактивного пользователя, отправляет email с ссылкой для подтверждения.
+    """
+
     form_class = CustomUserCreationForm
     template_name = "users/register.html"
     success_url = reverse_lazy("users:login")
 
     def form_valid(self, form):
+        """
+        При валидной форме сохраняет пользователя в неактивном состоянии,
+        генерирует токен подтверждения email и отправляет письмо с ссылкой.
+        """
         user = form.save(commit=False)
         user.is_active = False
         user.save()
@@ -44,6 +54,12 @@ class RegisterView(CreateView):
 
 
 def email_verification(request, uidb64, token):
+    """
+    Функция для подтверждения email пользователя.
+
+    Раскодирует uid, проверяет токен безопасности.
+    Если валидно — активирует пользователя, иначе сообщает об ошибке.
+    """
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -61,11 +77,19 @@ def email_verification(request, uidb64, token):
 
 
 class DashboardView(LoginRequiredMixin, View):
+    """Представление главной страницы (дашборда) пользователя после входа."""
+
     def get(self, request):
         return render(request, "users/dashboard.html")
 
 
 class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """
+    Отображает список пользователей.
+
+    Доступ имеют только суперпользователи и пользователи из группы 'moderators'.
+    """
+
     model = User
     template_name = "users/user_list.html"
     context_object_name = "users"
@@ -73,24 +97,36 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     login_url = reverse_lazy("users:login")
 
     def test_func(self):
+        """Проверяет, что текущий пользователь — суперпользователь или модератор."""
         return (
             self.request.user.is_superuser
             or self.request.user.groups.filter(name="moderators").exists()
         )
 
     def get_success_url(self):
+        """Определяет URL для успешного перенаправления."""
         if self.request.user.is_superuser and self.request.user != self.object:
             return reverse_lazy("users:user_list")
         return reverse_lazy("users:dashboard")
 
 
 class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """
+    Отображает детальную информацию о пользователе.
+
+    Разрешен доступ:
+    - Суперпользователям.
+    - Модераторам.
+    - Пользователю для просмотра собственного профиля.
+    """
+
     model = User
     template_name = "users/user_detail.html"
     raise_exception = True
     login_url = reverse_lazy("users:login")
 
     def test_func(self):
+        """Логика проверки доступа к просмотру пользователя."""
         obj = self.get_object()
         user = self.request.user
 
@@ -106,6 +142,14 @@ class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 
 class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    Представление для редактирования данных пользователя.
+
+    Доступ:
+    - Суперпользователи могут редактировать любого пользователя.
+    - Обычные пользователи только свои данные.
+    """
+
     model = User
     form_class = UserUpdateForm
     template_name = "users/user_form.html"
@@ -113,6 +157,7 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     login_url = reverse_lazy("users:login")
 
     def test_func(self):
+        """Проверка прав доступа на редактирование."""
         obj = self.get_object()
         # Суперпользователь всегда имеет доступ
         if self.request.user.is_superuser:
@@ -121,6 +166,7 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return obj == self.request.user
 
     def get_success_url(self):
+        """Перенаправление после успешного обновления."""
         # Если суперпользователь редактирует другого - отправляем в список пользователей
         if self.request.user.is_superuser and self.request.user != self.object:
             return reverse_lazy("users:user_list")
@@ -130,12 +176,21 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 
 class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    Представление для удаления пользователя.
+
+    Доступ:
+    - Суперпользователи могут удалять любого.
+    - Пользователь может удалить только себя.
+    """
+
     model = User
     template_name = "users/user_delete.html"
     raise_exception = True
     login_url = reverse_lazy("users:login")
 
     def test_func(self):
+        """Проверка прав доступа на удаление."""
         obj = self.get_object()
         # Суперпользователь всегда имеет доступ
         if self.request.user.is_superuser:
@@ -144,6 +199,7 @@ class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return obj == self.request.user
 
     def get_success_url(self):
+        """URL для перенаправления после успешного удаления."""
         if self.request.user.is_superuser:
             return reverse_lazy("users:user_list.html")
         return reverse_lazy("users:dashboard")
