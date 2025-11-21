@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django_bootstrap_icons",
     "diary_app",
     "users",
+    "habits_app",
 ]
 
 MIDDLEWARE = [

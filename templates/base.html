@@ -2,6 +2,7 @@
 {% load user_extras %}
 {% load bootstrap_icons %}
 
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -32,6 +33,9 @@
       </a>
       <a class="navbar-brand" href="{% url 'diary:calendar' %}">
         {% bs_icon 'calendar' %} Календарь
+      </a>
+      <a class="navbar-brand" href="{% url 'habits_app:habit_list' %}">
+        {% bs_icon 'check2-circle' %} Привычки
       </a>
       <ul class="navbar-nav ms-auto align-items-center">
         {% if user.is_authenticated %}

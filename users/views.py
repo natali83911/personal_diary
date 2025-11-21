@@ -8,8 +8,14 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
-                                  UpdateView, View)
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+    View,
+)
 
 from config.settings import EMAIL_HOST_USER
 from users.forms import CustomUserCreationForm, UserUpdateForm

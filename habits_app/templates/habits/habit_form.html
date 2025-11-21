@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% load bootstrap_icons %}
+
+
+{% block title %}
+  {% if form.instance.pk %}
+    Редактировать привычку
+  {% else %}
+    Создать новую привычку
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<h1>
+  {% if form.instance.pk %}
+    {% bs_icon 'pencil' %} Редактировать привычку
+  {% else %}
+    {% bs_icon 'plus-lg' %} Создать новую привычку
+  {% endif %}
+</h1>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  
+  <div class="mb-3">
+    {{ form.name.label_tag }}
+    {% render_field form.name class="form-control" %}
+    {% if form.name.errors %}
+      <div class="text-danger">{{ form.name.errors }}</div>
+    {% endif %}
+  </div>
+  
+  <div class="mb-3">
+    {{ form.description.label_tag }}
+    {% render_field form.description class="form-control" rows="3" %}
+    {% if form.description.errors %}
+      <div class="text-danger">{{ form.description.errors }}</div>
+    {% endif %}
+  </div>
+  
+  <div class="form-check mb-3">
+    {% render_field form.is_active class="form-check-input" %}
+    {{ form.is_active.label_tag }}
+  </div>
+
+  <button type="submit" class="btn btn-outline-primary">
+    {% if form.instance.pk %}
+      {% bs_icon 'check-lg' %} Сохранить
+    {% else %}
+    {% bs_icon 'file-earmark-plus' %} Создать
+    {% endif %}
+  </button>
+  
+  <a href="{% url 'habits_app:habit_list' %}" class="btn btn-outline-secondary ms-2">
+   {% bs_icon 'x-lg' %}  Отмена
+  </a>
+</form>
+{% endblock %}
