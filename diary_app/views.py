@@ -9,6 +9,8 @@ from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
 
 from .forms import AttachmentForm, DiaryEntryForm, EntrySearchForm
 from .models import Attachment, DiaryEntry, EventCalendar
+from .utils import (MOOD_STYLES, TAG_COLORS, get_daily_affirmation,
+                    get_mood_style, get_tag_color)
 
 
 class DiaryEntryListView(LoginRequiredMixin, ListView):
@@ -54,6 +56,8 @@ class DiaryEntryListView(LoginRequiredMixin, ListView):
         """Добавляет в контекст форму поиска для отображения на странице."""
         context = super().get_context_data(**kwargs)
         context["search_form"] = EntrySearchForm(self.request.GET)
+        context["affirmation"] = get_daily_affirmation()
+        context["MOOD_STYLES"] = MOOD_STYLES
         return context
 
 
@@ -123,9 +127,12 @@ class DiaryEntryCreateView(LoginRequiredMixin, CreateView):
         )
 
     def get_context_data(self, **kwargs):
-        """Добавляет формы прикрепления файлов в контекст."""
         context = super().get_context_data(**kwargs)
-        context.setdefault("files_form", AttachmentForm())
+        context["MOOD_STYLES"] = MOOD_STYLES
+        context["TAG_COLORS"] = TAG_COLORS
+        context["get_tag_color"] = get_tag_color
+        if "files_form" not in context:
+            context["files_form"] = AttachmentForm()
         return context
 
 
@@ -225,6 +232,7 @@ def calendar_view(request, year=None, month=None):
 
     cal = EventCalendar(events)
     html_cal = cal.formatmonth(year, month)
+    month_name = EventCalendar.RU_MONTHS[month]
 
     # Рассчитать предыдущий месяц
     if month == 1:
@@ -246,9 +254,37 @@ def calendar_view(request, year=None, month=None):
         "calendar": html_cal,
         "year": year,
         "month": month,
+        "ru_month": month_name,
         "prev_month": prev_month,
         "prev_year": prev_year,
         "next_month": next_month,
         "next_year": next_year,
     }
     return render(request, "diary/calendar.html", context)
+
+
+def formatday(self, day, weekday):
+    if day == 0:
+        return '<td class="noday">&nbsp;</td>'
+    cssclass = self.cssclasses[weekday]
+    today = datetime.today().day
+    if day == today:
+        cssclass += " today"
+    body = f'<span class="day">{day}</span>'
+    if day in self.events:
+        cssclass += " eventday"
+        body += "<ul style='list-style:none;padding-left:0;'>"
+        for event in self.events[day]:
+            mood_style = get_mood_style(event.mood)
+            tags = ", ".join(t.name for t in event.tags.all())
+            body += (
+                f"<li>"
+                f"<span style='font-size:1.2em;'>{mood_style['emoji']}</span> "
+                f"{event.title} "
+                f"<span style='color: {mood_style['color']};'>({event.mood})</span>"
+                f"{' — <small>' + tags + '</small>' if tags else ''}"
+                f"</li>"
+            )
+        body += "</ul>"
+        return f'<td class="{cssclass}">{body}</td>'
+    return f'<td class="{cssclass}"><span class="day">{day}</span></td>'

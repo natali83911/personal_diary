@@ -180,10 +180,12 @@ class DiaryEntryCreateViewTests(TestCase):
             "title": "New Title",
             "content": "New Content",
             "tags": [],
-            "mood": "happy",
+            "mood": "радость",
             "is_private": False,
         }
         response = self.client.post(url, data)
+        print(response.status_code, response.context and response.context.get("form"))
+
         self.assertIn(
             response.status_code, [302, 303]
         )  # Редирект после успешного создания

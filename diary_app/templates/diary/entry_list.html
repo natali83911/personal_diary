@@ -1,11 +1,19 @@
 {% extends "base.html" %}
 {% load widget_tweaks %}
 {% load bootstrap_icons %}
+{% load mood_tags %}
 
 {% block title %}Мои записи{% endblock %}
 
 {% block content %}
 <h1>{% bs_icon 'journal-text' %} Мои записи</h1>
+
+{% if affirmation %}
+  <div class="alert alert-info affirmation-day mb-3">
+    {% bs_icon 'sun' %} <strong>Аффирмация дня:</strong> {{ affirmation.text }}
+  </div>
+{% endif %}
+
 <div class="d-flex flex-column align-items-start w-100 mb-3">
   <a href="{% url 'diary:entry_create' %}" class="btn btn-outline-success mb-2">
     {% bs_icon 'plus-lg' %} Новая запись
@@ -22,12 +30,24 @@
 {% if entries %}
   <ul class="list-group mt-3 w-100">
     {% for entry in entries %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
+      {% with mood_style=MOOD_STYLES|get_item:entry.mood %}
+      <li class="list-group-item d-flex justify-content-between align-items-center"
+          style="border-left:6px solid {{ mood_style|dict_key:'color'|default:'#e2e3e5' }}">
         <div class="flex-grow-1">
+          <span style="font-size:1.3em;">
+            {{ mood_style|dict_key:'emoji'|default:'🙂' }}
+          </span>
           <a href="{% url 'diary:entry_detail' entry.pk %}" class="record-title">
             {% bs_icon 'file-text' %} {{ entry.title }}
           </a>
-          <span class="record-date">{{ entry.created_at|date:"d M Y H:i" }}</span>
+          {% if entry.mood %}
+            <span class="record-mood">({{ entry.mood }})</span>
+          {% endif %}
+          {% if entry.tags.all %}
+            <small style="color:#888;">
+              {% for tag in entry.tags.all %}#{{ tag.name }} {% endfor %}
+            </small>
+          {% endif %}
         </div>
         <div class="d-flex gap-2 flex-shrink-0">
           {% if entry.user == request.user %}
@@ -41,6 +61,7 @@
           {% endif %}
         </div>
       </li>
+      {% endwith %}
     {% endfor %}
   </ul>
 
@@ -49,7 +70,8 @@
       <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_form.query.value %}&query={{ search_form.query.value }}{% endif %}">
+            <a class="page-link"
+               href="?page={{ page_obj.previous_page_number }}{% if search_form.query.value %}&query={{ search_form.query.value }}{% endif %}">
               {% bs_icon 'chevron-left' %} Назад
             </a>
           </li>
@@ -61,7 +83,8 @@
         </span></li>
         {% if page_obj.has_next %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_form.query.value %}&query={{ search_form.query.value }}{% endif %}">
+            <a class="page-link"
+               href="?page={{ page_obj.next_page_number }}{% if search_form.query.value %}&query={{ search_form.query.value }}{% endif %}">
               Вперед {% bs_icon 'chevron-right' %}
             </a>
           </li>
@@ -78,8 +101,8 @@
     </a>
   {% endif %}
 {% else %}
-    <p>Записей пока нет.</p>
-  {% endif %}
+  <p>Записей пока нет.</p>
+{% endif %}
 </div>
 {% endblock %}
 

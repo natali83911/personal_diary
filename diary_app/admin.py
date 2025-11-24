@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import DiaryEntry, Tag
+from .models import Affirmation, DiaryEntry, Tag
 
 
 @admin.register(Tag)
@@ -33,3 +33,22 @@ class DiaryEntryAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     date_hierarchy = "created_at"
     ordering = ("-created_at",)
+
+
+@admin.register(Affirmation)
+class AffirmationAdmin(admin.ModelAdmin):
+    list_display = ("text", "is_active", "created_at")
+    list_filter = ("is_active", "created_at")
+    search_fields = ("text",)
+    list_editable = ("is_active",)
+    ordering = ("-created_at",)
+    date_hierarchy = "created_at"
+    actions = ["activate_affirmations", "deactivate_affirmations"]
+
+    @admin.action(description="Активировать выбранные аффирмации")
+    def activate_affirmations(self, request, queryset):
+        queryset.update(is_active=True)
+
+    @admin.action(description="Деактивировать выбранные аффирмации")
+    def deactivate_affirmations(self, request, queryset):
+        queryset.update(is_active=False)

@@ -4,7 +4,7 @@
 {% block title %}Календарь{% endblock %}
 
 {% block content %}
-<h1>{% bs_icon 'calendar-event' %} Календарь {{ month }}/{{ year }}</h1>
+<h1>{% bs_icon 'calendar-event' %} Календарь {{ ru_month }}/{{ year }}</h1>
 
 <div class="mb-3">
   <a href="{% url 'diary:calendar_filtered' prev_year prev_month %}" class="btn btn-outline-success">

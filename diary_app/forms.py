@@ -10,6 +10,20 @@ class DiaryEntryForm(forms.ModelForm):
     Поле tags реализовано с помощью нескольких чекбоксов.
     """
 
+    MOOD_CHOICES = [
+        ("радость", "Радость"),
+        ("грусть", "Грусть"),
+        ("спокойствие", "Спокойствие"),
+        ("раздражение", "Раздражение"),
+        ("энергия", "Энергия"),
+        ("", "Другое/Не выбрано"),
+    ]
+    mood = forms.ChoiceField(
+        choices=MOOD_CHOICES,
+        required=False,
+        label="Настроение",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
     tags = forms.ModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False,
@@ -20,9 +34,6 @@ class DiaryEntryForm(forms.ModelForm):
     class Meta:
         model = DiaryEntry
         fields = ["title", "content", "tags", "mood", "is_private"]
-        widgets = {
-            "tags": forms.SelectMultiple(attrs={"class": "form-select", "size": "5"}),
-        }
 
 
 class MultiFileInput(forms.FileInput):

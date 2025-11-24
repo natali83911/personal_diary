@@ -128,12 +128,63 @@ class DiaryEntry(models.Model):
 
 class EventCalendar(calendar.HTMLCalendar):
     """
-    Класс для генерации HTML-календаря с событиями (записями дневника),
-    сгруппированными по дням месяца.
+    Генерирует HTML-календарь событий с русскими днями недели и месяцем.
 
-    Аргументы:
-    - events: QuerySet или список записей DiaryEntry для отображения.
+    Расширяет стандартный календарь Python для вывода заголовков и шапки на русском языке.
+    Используется для визуализации записей дневника и других событий.
+
+    Атрибуты:
+        RU_WEEKDAYS (list[str]): Список коротких названий дней недели на русском (Пн - Вс).
+        RU_MONTHS (list[str]): Список названий месяцев на русском (Январь - Декабрь, индекс 1 - январь).
     """
+
+    RU_WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+    RU_MONTHS = [
+        "",
+        "Январь",
+        "Февраль",
+        "Март",
+        "Апрель",
+        "Май",
+        "Июнь",
+        "Июль",
+        "Август",
+        "Сентябрь",
+        "Октябрь",
+        "Ноябрь",
+        "Декабрь",
+    ]
+
+    def formatmonthname(self, theyear, themonth, withyear=True):
+        """
+        Выводит HTML-заголовок месяца для календаря в виде таблицы.
+
+        Аргументы:
+            theyear (int): Год для отображения.
+            themonth (int): Месяц (1-12).
+            withyear (bool): Добавлять ли год (по умолчанию True).
+
+        Возвращает:
+            str: HTML-строка с названием месяца и года.
+        """
+        month_name = self.RU_MONTHS[themonth]
+        if withyear:
+            s = f"{month_name} {theyear}"
+        else:
+            s = f"{month_name}"
+        return f"<tr><th colspan='7' class='month'>{s}</th></tr>"
+
+    def formatweekday(self, day):
+        """
+        Выводит HTML-шапку для одного дня недели в таблице календаря.
+
+        Аргументы:
+            day (int): День недели (0 - Пн, 6 - Вс).
+
+        Возвращает:
+            str: HTML-ячейка с русским названием дня недели.
+        """
+        return f"<th class='{self.cssclasses[day]}'>{self.RU_WEEKDAYS[day]}</th>"
 
     def __init__(self, events):
         super().__init__()
@@ -144,8 +195,6 @@ class EventCalendar(calendar.HTMLCalendar):
         Группирует переданные события по дням месяца.
 
         Возвращает словарь, где ключ — день месяца, значение — список событий.
-        :param events:
-        :return:
         """
         # Группируем события (DiaryEntry) по дню месяца
         events_per_day = {}
@@ -205,3 +254,16 @@ class Attachment(models.Model):
     def __str__(self):
         """Возвращает имя файла для удобного отображения."""
         return self.file.name
+
+
+class Affirmation(models.Model):
+    text = models.CharField(max_length=255, verbose_name="Текст аффирмации")
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True, verbose_name="Показывать в ротации")
+
+    def __str__(self):
+        return self.text
+
+    class Meta:
+        verbose_name = "Аффирмация"
+        verbose_name_plural = "Аффирмации"
