@@ -2,11 +2,9 @@ import calendar
 from datetime import date, datetime
 
 from django.db import models
-from django.urls import reverse
 from django.utils.text import slugify
 
 from config import settings
-from diary_app.utils import get_mood_style
 
 
 class Tag(models.Model):
@@ -135,8 +133,19 @@ class EventCalendar(calendar.HTMLCalendar):
 
     RU_WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
     RU_MONTHS = [
-        "", "Январь", "Февраль", "Март", "Апрель", "Май",
-        "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
+        "",
+        "Январь",
+        "Февраль",
+        "Март",
+        "Апрель",
+        "Май",
+        "Июнь",
+        "Июль",
+        "Август",
+        "Сентябрь",
+        "Октябрь",
+        "Ноябрь",
+        "Декабрь",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -152,9 +161,9 @@ class EventCalendar(calendar.HTMLCalendar):
         elif len(args) == 2 and not kwargs:
             self.year, self.month = args
         else:
-            self.year = kwargs.get('year') or datetime.now().year
-            self.month = kwargs.get('month') or datetime.now().month
-            self.events = kwargs.get('events', [])
+            self.year = kwargs.get("year") or datetime.now().year
+            self.month = kwargs.get("month") or datetime.now().month
+            self.events = kwargs.get("events", [])
 
         if self.year is None:
             self.year = datetime.now().year
@@ -211,11 +220,11 @@ class EventCalendar(calendar.HTMLCalendar):
             weekday = 1  # фиксированный для тестов (вторник)
             is_test_mode = True
 
-        cssclass = self.cssclasses[weekday] if hasattr(self, 'cssclasses') else "tue"
+        cssclass = self.cssclasses[weekday] if hasattr(self, "cssclasses") else "tue"
         today = datetime.now()
 
         # Подсвечиваем текущий день
-        if (day == today.day and self.month == today.month and self.year == today.year):
+        if day == today.day and self.month == today.month and self.year == today.year:
             cssclass += " today"
 
         # URL для списка записей
@@ -237,6 +246,7 @@ class EventCalendar(calendar.HTMLCalendar):
 
         body = day_html
         return f'<td class="{cssclass}">{body}</td>'
+
 
 class Attachment(models.Model):
     """

@@ -1,8 +1,13 @@
 from django.urls import path
 
-from .views import (DiaryEntryCreateView, DiaryEntryDeleteView,
-                    DiaryEntryDetailView, DiaryEntryListView,
-                    DiaryEntryUpdateView, calendar_view)
+from .views import (
+    DiaryEntryCreateView,
+    DiaryEntryDeleteView,
+    DiaryEntryDetailView,
+    DiaryEntryListView,
+    DiaryEntryUpdateView,
+    calendar_view,
+)
 
 app_name = "diary"
 
