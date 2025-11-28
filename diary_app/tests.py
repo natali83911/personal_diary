@@ -62,6 +62,19 @@ class EventCalendarTests(TestCase):
             self.created_at = datetime(2025, 11, day)
             self.title = title
 
+    def test_formatday(self):
+        """Проверяет форматирование HTML для дня с и без событий."""
+        now = datetime.now()
+        events = [self.DummyEvent(now.day, "Test Event")]
+        cal = EventCalendar(now.year, now.month, events)  # все параметры сразу
+
+        # День 0 (пустой)
+        self.assertIn("noday", cal.formatday(0, 0))
+        # День с событием
+        html = cal.formatday(now.day, 1)
+        self.assertIn("eventday", html)
+        self.assertIn("Test Event", html)
+
     def test_group_by_day(self):
         """Проверяет правильную группировку событий по дням."""
         events = [
@@ -69,21 +82,10 @@ class EventCalendarTests(TestCase):
             self.DummyEvent(1, "Event2"),
             self.DummyEvent(2, "Event3"),
         ]
-        cal = EventCalendar(events)
-        self.assertIn(1, cal.events)
-        self.assertIn(2, cal.events)
-        self.assertEqual(len(cal.events[1]), 2)
-
-    def test_formatday(self):
-        """Проверяет форматирование HTML для дня с и без событий."""
-        events = [self.DummyEvent(datetime.now().day, "Test Event")]
-        cal = EventCalendar(events)
-        # День 0 (пустой)
-        self.assertIn("noday", cal.formatday(0, 0))
-        # День с событием
-        html = cal.formatday(datetime.now().day, 1)
-        self.assertIn("eventday", html)
-        self.assertIn("Test Event", html)
+        cal = EventCalendar(2025, 11, events)  # фиксированный месяц для теста
+        self.assertIn(1, cal.events_by_day)  # или cal.grouped_events
+        self.assertIn(2, cal.events_by_day)
+        self.assertEqual(len(cal.events_by_day[1]), 2)
 
 
 class DiaryEntryListViewTests(TestCase):
