@@ -2,9 +2,11 @@ import calendar
 from datetime import date, datetime
 
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 
 from config import settings
+from diary_app.utils import get_mood_style
 
 
 class Tag(models.Model):
@@ -148,29 +150,15 @@ class EventCalendar(calendar.HTMLCalendar):
         "Декабрь",
     ]
 
-    def __init__(self, *args, **kwargs):
-        self.events = []
-        self.year = None
-        self.month = None
-        self.events_by_day = {}
-
-        if len(args) == 3:
-            self.year, self.month, self.events = args
-        elif len(args) == 1 and not kwargs:
-            self.events = args[0]
-        elif len(args) == 2 and not kwargs:
-            self.year, self.month = args
-        else:
-            self.year = kwargs.get("year") or datetime.now().year
-            self.month = kwargs.get("month") or datetime.now().month
-            self.events = kwargs.get("events", [])
-
-        if self.year is None:
-            self.year = datetime.now().year
-        if self.month is None:
-            self.month = datetime.now().month
-
-        super().__init__()
+    def __init__(self, year, month, events):
+        """
+        year, month – отображаемый месяц;
+        events – QuerySet/список DiaryEntry этого месяца.
+        """
+        super().__init__()  # инициализируем HTMLCalendar
+        self.year = year
+        self.month = month
+        self.events = list(events)
         self.group_by_day()
 
     def formatmonthname(self, theyear, themonth, withyear=True):
@@ -187,64 +175,68 @@ class EventCalendar(calendar.HTMLCalendar):
         """Группирует события по дням месяца."""
         self.events_by_day = {}
         for event in self.events:
-            day = event.created_at.day
-            if day not in self.events_by_day:
-                self.events_by_day[day] = []
-            self.events_by_day[day].append(event)
+            d = event.created_at.day
+            self.events_by_day.setdefault(d, []).append(event)
 
     def formatmonth(self, theyear, themonth, withyear=True):
-        """Сохраняем год и месяц для использования в formatday."""
+        """
+        Перегенерируем месяц, сохраняя год/месяц в объекте.
+        """
         self.year = theyear
         self.month = themonth
         return super().formatmonth(theyear, themonth, withyear)
 
-    def formatday(self, day, events_num_or_weekday):
+    def formatday(self, day, weekday):
         """
-        Универсальный formatday:
-        - Для тестов: formatday(day, events_num)
-        - Для HTMLCalendar: formatday(day, weekday)
+        Форматирует HTML-ячейку календаря для конкретного дня.
+        Сигнатура совместима с HTMLCalendar: (day, weekday).
         """
         if day == 0:
             return '<td class="noday">&nbsp;</td>'
 
-        # Определяем weekday для CSS-класса (если это не число событий)
-        try:
-            weekday = int(events_num_or_weekday)
-            is_test_mode = False
-        except (ValueError, TypeError):
-            # Это weekday из HTMLCalendar
-            weekday = events_num_or_weekday
-            is_test_mode = False
-        else:
-            # Это events_num из теста
-            weekday = 1  # фиксированный для тестов (вторник)
-            is_test_mode = True
-
-        cssclass = self.cssclasses[weekday] if hasattr(self, "cssclasses") else "tue"
+        cssclass = self.cssclasses[weekday]
         today = datetime.now()
 
         # Подсвечиваем текущий день
         if day == today.day and self.month == today.month and self.year == today.year:
             cssclass += " today"
 
-        # URL для списка записей
         current_date = date(self.year, self.month, day)
-        day_url = f"/?date={current_date.isoformat()}"
+        day_url = reverse("diary:entry_list") + f"?date={current_date.isoformat()}"
         day_html = f'<a href="{day_url}"><span class="day">{day}</span></a>'
 
-        # Проверяем события для тестов И production
         events = self.events_by_day.get(day, [])
-        if events or (is_test_mode and events_num_or_weekday > 0):
+
+        if events:
             cssclass += " eventday"
 
-            # Добавляем название события для теста
-            if events:
-                first_event = events[0]
-                day_html += f"<br>{first_event.title}"
-            elif is_test_mode:
-                day_html += "<br>Test Event"  # для теста когда events_num=1
+            # Эмодзи по первому событию (если есть настроение)
+            first_event = events[0]
+            mood_style = get_mood_style(getattr(first_event, "mood", None))
+            if mood_style.get("emoji"):
+                day_html += f" <span>{mood_style['emoji']}</span>"
 
-        body = day_html
+            body = (
+                day_html + "<ul style='list-style:none;padding-left:0;margin:2px 0;'>"
+            )
+            for event in events:
+                mood_style = get_mood_style(getattr(event, "mood", None))
+                tags_qs = getattr(event, "tags", None)
+                tags = ", ".join(t.name for t in tags_qs.all()) if tags_qs else ""
+                tag_html = f" — <small>{tags}</small>" if tags else ""
+                body += (
+                    "<li style='font-size:0.8em;margin:1px 0;'>"
+                    f"<span style='font-size:1.1em;'>{mood_style['emoji']}</span> "
+                    f"{event.title} "
+                    f"<span style='color: {mood_style['color']};'>"
+                    f"({getattr(event, 'mood', '')})</span>"
+                    f"{tag_html}"
+                    "</li>"
+                )
+            body += "</ul>"
+        else:
+            body = day_html
+
         return f'<td class="{cssclass}">{body}</td>'
 
 

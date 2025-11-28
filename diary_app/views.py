@@ -4,13 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import (
-    CreateView,
-    DeleteView,
-    DetailView,
-    ListView,
-    UpdateView,
-)
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView)
 
 from .forms import AttachmentForm, DiaryEntryForm, EntrySearchForm
 from .models import Attachment, DiaryEntry, EventCalendar
@@ -253,7 +248,7 @@ def calendar_view(request, year=None, month=None):
         user=request.user,
     )
 
-    cal = EventCalendar(events, year=year, month=month)
+    cal = EventCalendar(year, month, events)
     html_cal = cal.formatmonth(year, month)
     month_name = EventCalendar.RU_MONTHS[month]
 
