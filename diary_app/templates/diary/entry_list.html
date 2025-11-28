@@ -30,12 +30,11 @@
 {% if entries %}
   <ul class="list-group mt-3 w-100">
     {% for entry in entries %}
-      {% with mood_style=MOOD_STYLES|get_item:entry.mood %}
       <li class="list-group-item d-flex justify-content-between align-items-center"
-          style="border-left:6px solid {{ mood_style|dict_key:'color'|default:'#e2e3e5' }}">
+          style="border-left:6px solid {{ entry.mood|mood_color }}">
         <div class="flex-grow-1">
           <span style="font-size:1.3em;">
-            {{ mood_style|dict_key:'emoji'|default:'🙂' }}
+            {{ entry.mood|mood_emoji }}
           </span>
           <a href="{% url 'diary:entry_detail' entry.pk %}" class="record-title">
             {% bs_icon 'file-text' %} {{ entry.title }}
@@ -61,7 +60,6 @@
           {% endif %}
         </div>
       </li>
-      {% endwith %}
     {% endfor %}
   </ul>
 
@@ -105,4 +103,3 @@
 {% endif %}
 </div>
 {% endblock %}
-

@@ -1,6 +1,6 @@
 from django import template
 
-from diary_app.utils import get_tag_color
+from diary_app.utils import get_mood_style, get_tag_color
 
 register = template.Library()
 
@@ -23,3 +23,15 @@ def dict_key(d, key):
 @register.filter
 def tag_color(idx):
     return get_tag_color(idx)
+
+
+@register.filter
+def mood_emoji(mood):
+    """Возвращает emoji для настроения."""
+    return get_mood_style(mood)["emoji"]
+
+
+@register.filter
+def mood_color(mood):
+    """Возвращает цвет для настроения."""
+    return get_mood_style(mood)["color"]

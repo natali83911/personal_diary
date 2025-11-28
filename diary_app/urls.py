@@ -4,7 +4,7 @@ from .views import (DiaryEntryCreateView, DiaryEntryDeleteView,
                     DiaryEntryDetailView, DiaryEntryListView,
                     DiaryEntryUpdateView, calendar_view)
 
-app_name = "diary_app"
+app_name = "diary"
 
 urlpatterns = [
     path("", DiaryEntryListView.as_view(), name="entry_list"),

@@ -1,19 +1,22 @@
 from datetime import date
 
-from diary_app.models import Affirmation
 
-MOOD_STYLES = {
-    "радость": {"emoji": "😄", "color": "#c3e6cb"},
-    "грусть": {"emoji": "😢", "color": "#f5c6cb"},
-    "спокойствие": {"emoji": "😌", "color": "#bee5eb"},
-    "раздражение": {"emoji": "😠", "color": "#ffeeba"},
-    "энергия": {"emoji": "⚡", "color": "#ffeeba"},
-    "": {"emoji": "🙂", "color": "#e2e3e5"},
-}
+def get_mood_style(mood: str | None) -> dict:
+    """
+    Возвращает оформление для настроения:
+    emoji + цвет. Примерная реализация — подстрой под свои значения.
+    """
+    mapping = {
+        "радость": {"emoji": "😊", "color": "#4caf50"},
+        "спокойствие": {"emoji": "😌", "color": "#2196f3"},
+        "грусть": {"emoji": "😢", "color": "#9e9e9e"},
+        "злость": {"emoji": "😡", "color": "#f44336"},
+        "раздражение": {"emoji": "😤", "color": "#ff9800"},
+        "энергия": {"emoji": "⚡", "color": "#ffeb3b"},
+        "личное": {"emoji": "📝", "color": "#9c27b0"},
+    }
 
-
-def get_mood_style(mood):
-    return MOOD_STYLES.get(mood, MOOD_STYLES[""])
+    return mapping.get(mood or "", {"emoji": "•", "color": "#757575"})
 
 
 TAG_COLORS = [
@@ -35,6 +38,8 @@ def get_tag_color(idx):
 
 
 def get_daily_affirmation():
+    from diary_app.models import Affirmation
+
     """Вернуть аффирмацию дня для всех пользователей (по номеру дня в году)"""
     affirmations = Affirmation.objects.filter(is_active=True).order_by("id")
     if affirmations.exists():

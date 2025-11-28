@@ -9,8 +9,7 @@ from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
 
 from .forms import AttachmentForm, DiaryEntryForm, EntrySearchForm
 from .models import Attachment, DiaryEntry, EventCalendar
-from .utils import (MOOD_STYLES, TAG_COLORS, get_daily_affirmation,
-                    get_mood_style, get_tag_color)
+from .utils import TAG_COLORS, get_daily_affirmation, get_tag_color
 
 
 class DiaryEntryListView(LoginRequiredMixin, ListView):
@@ -29,35 +28,51 @@ class DiaryEntryListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """
         Возвращает отсортированную по дате создания (по убыванию) уникальную выборку записей
-        текущего пользователя с фильтрацией по поисковому запросу.
+        текущего пользователя с фильтрацией по поисковому запросу и дате.
         """
         queryset = DiaryEntry.objects.filter(user=self.request.user)
-        query = self.request.GET.get("query", "")
 
-        filtered_queryset = queryset.filter(
-            Q(title__icontains=query)
-            | Q(content__icontains=query)
-            | Q(tags__name__icontains=query)
-        )
+        # текстовый поиск
+        query = self.request.GET.get("query", "").strip()
+        filtered_queryset = queryset
 
-        # Попытка фильтровать по дате
-        try:
-            date_query = datetime.datetime.strptime(query, "%Y-%m-%d").date()
-            filtered_queryset = filtered_queryset | queryset.filter(
-                created_at__date=date_query
+        if query:
+            filtered_queryset = filtered_queryset.filter(
+                Q(title__icontains=query)
+                | Q(content__icontains=query)
+                | Q(tags__name__icontains=query)
             )
-        except ValueError:
-            # query не дата - пропускаем фильтр по дате
-            pass
+
+            # попытка интерпретировать query как дату YYYY-MM-DD
+            try:
+                date_query = datetime.datetime.strptime(query, "%Y-%m-%d").date()
+                filtered_queryset = filtered_queryset | queryset.filter(
+                    created_at__date=date_query
+                )
+            except ValueError:
+                # query не дата — просто игнорируем этот путь
+                pass
+
+        # фильтр, приходящий из календаря ?date=YYYY-MM-DD
+        date_str = self.request.GET.get("date")
+        if date_str:
+            try:
+                date_query = datetime.datetime.fromisoformat(date_str).date()
+                filtered_queryset = filtered_queryset.filter(
+                    created_at__year=date_query.year,
+                    created_at__month=date_query.month,
+                    created_at__day=date_query.day,
+                )
+            except ValueError:
+                pass
 
         return filtered_queryset.distinct().order_by("-created_at")
 
     def get_context_data(self, **kwargs):
-        """Добавляет в контекст форму поиска для отображения на странице."""
+        """Добавляет в контекст форму поиска и аффирмацию дня."""
         context = super().get_context_data(**kwargs)
         context["search_form"] = EntrySearchForm(self.request.GET)
         context["affirmation"] = get_daily_affirmation()
-        context["MOOD_STYLES"] = MOOD_STYLES
         return context
 
 
@@ -128,7 +143,6 @@ class DiaryEntryCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["MOOD_STYLES"] = MOOD_STYLES
         context["TAG_COLORS"] = TAG_COLORS
         context["get_tag_color"] = get_tag_color
         if "files_form" not in context:
@@ -228,9 +242,13 @@ def calendar_view(request, year=None, month=None):
     year = int(year) if year else datetime.datetime.now().year
     month = int(month) if month else datetime.datetime.now().month
 
-    events = DiaryEntry.objects.filter(created_at__year=year, created_at__month=month)
+    events = DiaryEntry.objects.filter(
+        created_at__year=year,
+        created_at__month=month,
+        user=request.user,
+    )
 
-    cal = EventCalendar(events)
+    cal = EventCalendar(events, year=year, month=month)
     html_cal = cal.formatmonth(year, month)
     month_name = EventCalendar.RU_MONTHS[month]
 
@@ -261,30 +279,3 @@ def calendar_view(request, year=None, month=None):
         "next_year": next_year,
     }
     return render(request, "diary/calendar.html", context)
-
-
-def formatday(self, day, weekday):
-    if day == 0:
-        return '<td class="noday">&nbsp;</td>'
-    cssclass = self.cssclasses[weekday]
-    today = datetime.today().day
-    if day == today:
-        cssclass += " today"
-    body = f'<span class="day">{day}</span>'
-    if day in self.events:
-        cssclass += " eventday"
-        body += "<ul style='list-style:none;padding-left:0;'>"
-        for event in self.events[day]:
-            mood_style = get_mood_style(event.mood)
-            tags = ", ".join(t.name for t in event.tags.all())
-            body += (
-                f"<li>"
-                f"<span style='font-size:1.2em;'>{mood_style['emoji']}</span> "
-                f"{event.title} "
-                f"<span style='color: {mood_style['color']};'>({event.mood})</span>"
-                f"{' — <small>' + tags + '</small>' if tags else ''}"
-                f"</li>"
-            )
-        body += "</ul>"
-        return f'<td class="{cssclass}">{body}</td>'
-    return f'<td class="{cssclass}"><span class="day">{day}</span></td>'

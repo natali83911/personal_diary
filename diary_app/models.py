@@ -1,10 +1,12 @@
 import calendar
-from datetime import datetime
+from datetime import date, datetime
 
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 
 from config import settings
+from diary_app.utils import get_mood_style
 
 
 class Tag(models.Model):
@@ -156,17 +158,7 @@ class EventCalendar(calendar.HTMLCalendar):
     ]
 
     def formatmonthname(self, theyear, themonth, withyear=True):
-        """
-        Выводит HTML-заголовок месяца для календаря в виде таблицы.
-
-        Аргументы:
-            theyear (int): Год для отображения.
-            themonth (int): Месяц (1-12).
-            withyear (bool): Добавлять ли год (по умолчанию True).
-
-        Возвращает:
-            str: HTML-строка с названием месяца и года.
-        """
+        """Выводит HTML-заголовок месяца."""
         month_name = self.RU_MONTHS[themonth]
         if withyear:
             s = f"{month_name} {theyear}"
@@ -175,20 +167,14 @@ class EventCalendar(calendar.HTMLCalendar):
         return f"<tr><th colspan='7' class='month'>{s}</th></tr>"
 
     def formatweekday(self, day):
-        """
-        Выводит HTML-шапку для одного дня недели в таблице календаря.
-
-        Аргументы:
-            day (int): День недели (0 - Пн, 6 - Вс).
-
-        Возвращает:
-            str: HTML-ячейка с русским названием дня недели.
-        """
+        """Шапка для одного дня недели."""
         return f"<th class='{self.cssclasses[day]}'>{self.RU_WEEKDAYS[day]}</th>"
 
-    def __init__(self, events):
+    def __init__(self, events, year=None, month=None):
         super().__init__()
         self.events = self.group_by_day(events)
+        self.year = year
+        self.month = month
 
     def group_by_day(self, events):
         """
@@ -196,36 +182,75 @@ class EventCalendar(calendar.HTMLCalendar):
 
         Возвращает словарь, где ключ — день месяца, значение — список событий.
         """
-        # Группируем события (DiaryEntry) по дню месяца
         events_per_day = {}
         for event in events:
-            day = event.created_at.day  # Здесь берем созданную дату
+            day = event.created_at.day
             events_per_day.setdefault(day, []).append(event)
         return events_per_day
 
+    def formatmonth(self, theyear, themonth, withyear=True):
+        """Сохраняем год и месяц в объекте, чтобы использовать в formatday."""
+        self.year = theyear
+        self.month = themonth
+        return super().formatmonth(theyear, themonth, withyear)
+
     def formatday(self, day, weekday):
         """
-        Форматирует HTML ячейку календаря для конкретного дня.
+        Форматирует HTML-ячейку календаря для конкретного дня.
 
-        Добавляет CSS-классы и выводит события, если они есть.
+        - Подсвечивает текущий день.
+        - Добавляет эмодзи настроения рядом с номером дня (по первому событию).
+        - Дни кликабельны: переходят на список записей за этот день.
         """
         if day == 0:
-            return '<td class="noday">&nbsp;</td>'  # пустые дни в календаре
+            return '<td class="noday">&nbsp;</td>'  # пустые ячейки
+
         cssclass = self.cssclasses[weekday]
         today = datetime.today().day
 
-        if day == today:
-            cssclass += " today"  # подсветка текущего дня
+        if (
+            day == today
+            and self.month == datetime.today().month
+            and self.year == datetime.today().year
+        ):
+            cssclass += " today"
+
+        # дата этого дня
+        current_date = date(self.year, self.month, day)
+
+        # URL на список записей с фильтром по дате
+        day_url = reverse("diary:entry_list") + f"?date={current_date.isoformat()}"
+
+        # номер дня как ссылка
+        day_html = f'<a href="{day_url}"><span class="day">{day}</span></a>'
+
+        # если есть события — ставим emoji по настроению первого события
+        if day in self.events and self.events[day]:
+            first_event = self.events[day][0]
+            mood_style = get_mood_style(getattr(first_event, "mood", None))
+            if mood_style.get("emoji"):
+                day_html += f" <span>{mood_style['emoji']}</span>"
+
+        body = day_html
 
         if day in self.events:
-            cssclass += " eventday"  # подсветка дней с событиями
-            body = f'<span class="day">{day}</span><ul>'
+            cssclass += " eventday"
+            body += "<ul style='list-style:none;padding-left:0;'>"
             for event in self.events[day]:
-                # Отображаем заголовок записи дневника (event.title)
-                body += f"<li>{event.title}</li>"
+                mood_style = get_mood_style(event.mood)
+                tags = ", ".join(t.name for t in event.tags.all())
+                body += (
+                    f"<li>"
+                    f"<span style='font-size:1.2em;'>{mood_style['emoji']}</span> "
+                    f"{event.title} "
+                    f"<span style='color: {mood_style['color']};'>({event.mood})</span>"
+                    f"{' — <small>' + tags + '</small>' if tags else ''}"
+                    f"</li>"
+                )
             body += "</ul>"
             return f'<td class="{cssclass}">{body}</td>'
-        return f'<td class="{cssclass}"><span class="day">{day}</span></td>'
+
+        return f'<td class="{cssclass}">{body}</td>'
 
 
 class Attachment(models.Model):
