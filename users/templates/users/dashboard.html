@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Панель пользователя{% endblock %}
+
+{% block content %}
+<h1>Добро пожаловать, {{ user.email }}</h1>
+
+<div class="card mb-4">
+  <div class="card-header">
+    Профиль пользователя
+  </div>
+  <div class="card-body">
+    <p><strong>Имейл:</strong> {{ user.email }}</p>
+    
+    {% if user.avatar %}
+      <p>
+        <strong>Аватар:</strong><br />
+        <img src="{{ user.avatar.url }}" alt="Аватар {{ user.email }}" class="img-thumbnail" style="max-width: 150px;" />
+      </p>
+    {% else %}
+      <p><em>Аватар не загружен.</em></p>
+    {% endif %}
+
+    <p><strong>Токен:</strong> {{ user.token|default:"- отсутствует -" }}</p>
+  </div>
+</div>
+
+<div class="mb-3">
+  <a href="{% url 'users:user_update' user.pk %}" class="btn btn-outline-primary">Редактировать профиль</a>
+
+  <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-secondary ms-2">Выйти</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load bootstrap_icons %}
+
+{% block title %}{{ entry.title }}{% endblock %}
+
+{% block content %}
+<h1>{% bs_icon 'file-earmark-text' %} {{ entry.title }}</h1>
+<p>
+  <small>{% bs_icon 'calendar-check' %} Создана: {{ entry.created_at|date:"d M Y H:i" }}</small>
+</p>
+{% if entry.updated_at != entry.created_at %}
+<p>
+  <small>{% bs_icon 'pencil-square' %} Редактирована: {{ entry.updated_at|date:"d M Y H:i" }}</small>
+</p>
+{% endif %}
+
+<div>{{ entry.content|linebreaks }}</div>
+
+<div class="my-3">
+  <strong>{% bs_icon 'tags' %} Теги:</strong>
+  {% for tag in entry.tags.all %}
+    <span class="badge bg-secondary">{{ tag.name }}</span>
+  {% empty %}
+    <span>Тегов нет</span>
+  {% endfor %}
+</div>
+
+<p><strong>{% bs_icon 'emoji-smile' %} Настроение:</strong> {{ entry.mood }}</p>
+
+<h5>{% bs_icon 'file-earmark-arrow-down' %} Прикрепленные файлы:</h5>
+{% if entry.attachments.all %}
+<ul>
+  {% for attachment in entry.attachments.all %}
+    <li>
+      <a href="{{ attachment.file.url }}" target="_blank">
+        {{ attachment.file.name|cut:"attachments/" }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>Файлы не прикреплены.</p>
+{% endif %}
+
+{% if request.user == entry.user or request.user.is_superuser %}
+  <a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-outline-primary">
+    {% bs_icon 'pencil-square' %} Редактировать
+  </a>
+  <a href="{% url 'diary:entry_delete' entry.pk %}" class="btn btn-outline-danger ms-2"
+     onclick="return confirm('Вы уверены, что хотите удалить эту запись?');">
+     {% bs_icon 'trash' %} Удалить
+  </a>
+{% endif %}
+<a href="{% url 'diary:entry_list' %}" class="btn btn-outline-secondary ms-2">
+  {% bs_icon 'arrow-left' %} Назад к списку
+</a>
+{% endblock %}
